@@ -134,6 +134,7 @@ namespace Engine
             Location spiderField = new Location(LOCATION_ID_SPIDER_FIELD, "Forest", "You see spider webs covering the trees in this forest.");
             spiderField.MonsterLivingHere = MonsterByID(MONSTER_ID_GIANT_SPIDER);
 
+            //
             //                          Alchemist's Garden
             //                                  |
             //                             Alchemist Hut
@@ -142,6 +143,7 @@ namespace Engine
             //                                  |
             //                                Home
             //
+
             // Link the locations together
             home.LocationToNorth = townSquare;
 

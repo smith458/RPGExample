@@ -120,6 +120,9 @@ namespace SuperAdventure
 
                             // Mark the quest as completed
                             _player.MarkQuestCompleted(newLocation.QuestAvailableHere);
+
+                            RefreshPlayerInfo();
+                            
                         }
                     }
                 }
@@ -206,7 +209,7 @@ namespace SuperAdventure
 
             foreach (PlayerQuest pq in _player.Quests)
             { 
-                dgvInventory.Rows.Add(new[] { pq.Details.Name, pq.IsCompleted.ToString() });
+                dgvQuests.Rows.Add(new[] { pq.Details.Name, pq.IsCompleted.ToString() });
             }
         }
 
@@ -260,6 +263,21 @@ namespace SuperAdventure
             btnUsePotion.Visible = status;
         }
 
+        private void WriteToRtb(RichTextBox rtb, string message)
+        {
+            rtb.Text += message;
+            rtb.SelectionStart = rtb.Text.Length;
+            rtb.ScrollToCaret();
+        }
+
+        public void RefreshPlayerInfo()
+        {
+            lblHitPoints.Text = _player.CurrentHitPoints.ToString();
+            lblGold.Text = _player.Gold.ToString();
+            lblExperience.Text = _player.ExperiencePoints.ToString();
+            lblLevel.Text = _player.Level.ToString();
+        }
+
         private void btnUseWeapon_Click(object sender, EventArgs e)
         {
             //Get the currently selected item
@@ -278,16 +296,16 @@ namespace SuperAdventure
             if (_currentMonster.CurrentHitPoints <= 0)
             {
                 //Monster is dead
-                rtbMessages.Text += Environment.NewLine;
-                rtbMessages.Text += "You defeated the " + _currentMonster.Name + Environment.NewLine;
+                WriteToRtb(rtbMessages, Environment.NewLine);
+                WriteToRtb(rtbMessages, "You defeated the " + _currentMonster.Name + Environment.NewLine);
 
                 //Give player experience for killing the monster
                 _player.ExperiencePoints += _currentMonster.RewardExperiencePoints;
-                rtbMessages.Text += "You receive " + _currentMonster.RewardExperiencePoints.ToString();
+                WriteToRtb(rtbMessages, "You receive " + _currentMonster.RewardExperiencePoints.ToString() + " experience points." + Environment.NewLine);
 
                 //Give player gold
                 _player.Gold += _currentMonster.RewardGold;
-                rtbMessages.Text += "You receive " + _currentMonster.RewardGold + Environment.NewLine;
+                WriteToRtb(rtbMessages, "You receive " + _currentMonster.RewardGold + " gold." + Environment.NewLine);
 
                 //Get random loot items from the monster
                 List<InventoryItem> lootedItems = new List<InventoryItem>();
@@ -352,7 +370,7 @@ namespace SuperAdventure
                 int damageToPlayer = RandomNumberGenerator.NumberBetween(0, _currentMonster.MaximumDamage);
 
                 //Display message
-                rtbMessages.Text += "The " + _currentMonster + " did " + damageToPlayer.ToString() + " points of damage." + Environment.NewLine;
+                rtbMessages.Text += "The " + _currentMonster.Name + " did " + damageToPlayer.ToString() + " points of damage." + Environment.NewLine;
 
                 //Subtract damage from player
                 _player.CurrentHitPoints -= damageToPlayer;
@@ -374,7 +392,56 @@ namespace SuperAdventure
 
         private void btnUsePotion_Click(object sender, EventArgs e)
         {
+            // Get the currently selected potion from the combobox
+            HealingPotion potion = (HealingPotion)cboPotions.SelectedItem;
 
+            // Add healing amount to the player's current hit points
+            _player.CurrentHitPoints = (_player.CurrentHitPoints + potion.AmountToHeal);
+
+            // CurrentHitPoints cannot exceed player's MaximumHitPoints
+            if (_player.CurrentHitPoints > _player.MaximumHitPoints)
+            {
+                _player.CurrentHitPoints = _player.MaximumHitPoints;
+            }
+
+            // Remove the potion from the player's inventory
+            foreach (InventoryItem ii in _player.Inventory)
+            {
+                if (ii.Details.ID == potion.ID)
+                {
+                    ii.Quantity--;
+                    break;
+                }
+            }
+
+            // Display message
+            rtbMessages.Text += "You drink a " + potion.Name + Environment.NewLine;
+
+            // Monster gets their turn to attack
+
+            // Determine the amount of damage the monster does to the player
+            int damageToPlayer = RandomNumberGenerator.NumberBetween(0, _currentMonster.MaximumDamage);
+
+            // Display message
+            rtbMessages.Text += "The " + _currentMonster.Name + " did " + damageToPlayer.ToString() + " points of damage." + Environment.NewLine;
+
+            // Subtract damage from player
+            _player.CurrentHitPoints -= damageToPlayer;
+
+            if (_player.CurrentHitPoints <= 0)
+            {
+                // Display message
+                rtbMessages.Text += "The " + _currentMonster.Name + " killed you." + Environment.NewLine;
+
+                // Move player to "Home"
+                MoveTo(World.LocationByID(World.LOCATION_ID_HOME));
+            }
+
+            // Refresh player data in UI
+            lblHitPoints.Text = _player.CurrentHitPoints.ToString();
+            UpdateInventoryListInUI();
+            UpdateItemOptionsInUI<HealingPotion>(cboPotions, btnUsePotion);
+            Console.WriteLine();
         }
     }
 }

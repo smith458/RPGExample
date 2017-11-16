@@ -6,20 +6,34 @@ using System.Threading.Tasks;
 
 namespace Engine
 {
-    public class Player : LivingCreature
+    public class Player
     {
         public int Gold { get; set; }
         public int ExperiencePoints { get; set; }
-        public int Level { get; set; }
+        public int Level
+        {
+            get
+            {
+                return (ExperiencePoints / 100) + 1;
+            }
+        }
         public List<InventoryItem> Inventory { get; set; }
         public List<PlayerQuest> Quests { get; set; }
         public Location CurrentLocation { get; set; }
-
-        public Player(int currentHitPoints, int maximumHitPoints, int gold, int experiencePoints, int level) : base(currentHitPoints, maximumHitPoints)
+        public int CurrentHitPoints { get; set; }
+        public int MaximumHitPoints
+        {
+            get
+            {
+                return (Level + 1) * 5;
+            }
+        }
+        
+        public Player(int gold, int experiencePoints)
         {
             Gold = gold;
             ExperiencePoints = experiencePoints;
-            Level = level;
+            CurrentHitPoints = MaximumHitPoints;
 
             Inventory = new List<InventoryItem>();
             Quests = new List<PlayerQuest>();
@@ -32,38 +46,19 @@ namespace Engine
                 return true;
             }
 
-            foreach (InventoryItem ii in Inventory)
-            {
-                if (ii.Details.ID == location.ItemRequiredToEnter.ID)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return Inventory.Exists(ii => ii.Details.ID == location.ItemRequiredToEnter.ID);
         }
 
         public bool HasThisQuest(Quest quest)
         {
-            foreach (PlayerQuest playerQuest in Quests)
-            {
-                if (playerQuest.Details.ID == quest.ID)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return Quests.Exists(q => q.Details.ID == quest.ID);
         }
 
         public bool CompletedThisQuest(Quest quest)
         {
-            foreach (PlayerQuest playerQuest in Quests)
+            if (HasThisQuest(quest))
             {
-                if (playerQuest.Details.ID == quest.ID)
-                {
-                    return playerQuest.IsCompleted;
-                }
+                return Quests.First(q => q.Details.ID == quest.ID).IsCompleted;
             }
 
             return false;
@@ -73,22 +68,8 @@ namespace Engine
         {
             foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
             {
-                bool foundItemInPlayersInventory = false;
-
-                foreach (InventoryItem ii in Inventory)
-                {
-                    if (ii.Details.ID == qci.Details.ID)
-                    {
-                        foundItemInPlayersInventory = true;
-
-                        if (ii.Quantity < qci.Quantity)
-                        {
-                            return false;
-                        }
-                    }
-                }
-
-                if (!foundItemInPlayersInventory)
+                //Return false if the player doesn't have the item or if they have the item, but not enough
+                if (!Inventory.Exists(ii => ii.Details.ID == qci.Details.ID && ii.Quantity > qci.Quantity))
                 {
                     return false;
                 }
@@ -101,44 +82,37 @@ namespace Engine
         {
             foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
             {
-                foreach (InventoryItem ii in Inventory)
+                InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == qci.Details.ID);
+                
+                if (item != null)
                 {
-                    if (ii.Details.ID == qci.Details.ID)
-                    {
-                        //Subtract quest quantity from inventory
-                        ii.Quantity -= qci.Quantity;
-                        break;
-                    }
+                    //Subtract quest quantity from inventory
+                    item.Quantity -= qci.Quantity;
                 }
             }
         }
 
         public void AddItemToInventory(Item itemToAdd)
         {
-            foreach (InventoryItem ii in Inventory)
+            InventoryItem item = Inventory.SingleOrDefault(ii => ii.Details.ID == itemToAdd.ID);
+
+            if (item == null)
             {
-                if (ii.Details.ID == itemToAdd.ID)
-                {
-                    ii.Quantity++;
-
-                    return;
-                }
+                Inventory.Add(new InventoryItem(itemToAdd, 1));
             }
-
-            //The player doesn't have a copy of the item
-            Inventory.Add(new InventoryItem(itemToAdd, 1));
+            else
+            {
+                item.Quantity++;
+            }
         }
 
         public void MarkQuestCompleted(Quest quest)
         {
-            foreach (PlayerQuest pq in Quests)
-            {
-                if (pq.Details.ID == quest.ID)
-                {
-                    pq.IsCompleted = true;
+            PlayerQuest playerQuest = Quests.SingleOrDefault(pq => pq.Details.ID == quest.ID);
 
-                    return;
-                }
+            if (playerQuest != null)
+            {
+                playerQuest.IsCompleted = true;
             }
         }
     }

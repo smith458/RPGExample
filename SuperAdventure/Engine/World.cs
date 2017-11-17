@@ -23,6 +23,9 @@ namespace Engine
         public const int ITEM_ID_SPIDER_FANG = 8;
         public const int ITEM_ID_SPIDER_SILK = 9;
         public const int ITEM_ID_ADVENTURER_PASS = 10;
+        public const int ITEM_ID_AXE = 11;
+        public const int ITEM_ID_WARHAMMER = 12;
+        public const int ITEM_ID_MAJOR_HEALING_POTION = 13;
 
         public const int MONSTER_ID_RAT = 1;
         public const int MONSTER_ID_SNAKE = 2;
@@ -57,7 +60,10 @@ namespace Engine
             Items.Add(new Item(ITEM_ID_SNAKE_FANG, "Snake fang", "Snake fangs"));
             Items.Add(new Item(ITEM_ID_SNAKESKIN, "Snakeskin", "Snakeskins"));
             Items.Add(new Weapon(ITEM_ID_CLUB, "Club", "Clubs", 3, 10));
+            Items.Add(new Weapon(ITEM_ID_AXE, "Axe", "Axes", 6, 20));
+            Items.Add(new Weapon(ITEM_ID_WARHAMMER, "Warhammer", "Warhammers", 12, 40));
             Items.Add(new HealingPotion(ITEM_ID_HEALING_POTION, "Healing potion", "Healing potions", 5));
+            Items.Add(new HealingPotion(ITEM_ID_MAJOR_HEALING_POTION, "Major healing potion", "Major healing potions", 5));
             Items.Add(new Item(ITEM_ID_SPIDER_FANG, "Spider fang", "Spider fangs"));
             Items.Add(new Item(ITEM_ID_SPIDER_SILK, "Spider silk", "Spider silks"));
             Items.Add(new Item(ITEM_ID_ADVENTURER_PASS, "Adventurer pass", "Adventurer passes"));
@@ -184,54 +190,22 @@ namespace Engine
 
         public static Item ItemByID(int id)
         {
-            foreach (Item item in Items)
-            {
-                if (item.ID == id)
-                {
-                    return item;
-                }
-            }
-
-            return null;
+            return Items.SingleOrDefault(x => x.ID == id);
         }
 
         public static Monster MonsterByID(int id)
         {
-            foreach (Monster monster in Monsters)
-            {
-                if (monster.ID == id)
-                {
-                    return monster;
-                }
-            }
-
-            return null;
+            return Monsters.SingleOrDefault(x => x.ID == id);
         }
 
         public static Quest QuestByID(int id)
         {
-            foreach (Quest quest in Quests)
-            {
-                if (quest.ID == id)
-                {
-                    return quest;
-                }
-            }
-
-            return null;
+            return Quests.SingleOrDefault(x => x.ID == id);
         }
 
         public static Location LocationByID(int id)
         {
-            foreach (Location location in Locations)
-            {
-                if (location.ID == id)
-                {
-                    return location;
-                }
-            }
-
-            return null;
+            return Locations.SingleOrDefault(x => x.ID == id);
         }
     }
 }

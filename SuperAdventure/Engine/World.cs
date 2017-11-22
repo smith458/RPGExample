@@ -63,7 +63,7 @@ namespace Engine
             Items.Add(new Weapon(ITEM_ID_AXE, "Axe", "Axes", 6, 20));
             Items.Add(new Weapon(ITEM_ID_WARHAMMER, "Warhammer", "Warhammers", 12, 40));
             Items.Add(new HealingPotion(ITEM_ID_HEALING_POTION, "Healing potion", "Healing potions", 5));
-            Items.Add(new HealingPotion(ITEM_ID_MAJOR_HEALING_POTION, "Major healing potion", "Major healing potions", 5));
+            Items.Add(new HealingPotion(ITEM_ID_MAJOR_HEALING_POTION, "Major healing potion", "Major healing potions", 30));
             Items.Add(new Item(ITEM_ID_SPIDER_FANG, "Spider fang", "Spider fangs"));
             Items.Add(new Item(ITEM_ID_SPIDER_SILK, "Spider silk", "Spider silks"));
             Items.Add(new Item(ITEM_ID_ADVENTURER_PASS, "Adventurer pass", "Adventurer passes"));

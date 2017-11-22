@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 
 using Engine;
 
@@ -16,16 +17,24 @@ namespace SuperAdventure
     {
         private Player _player;
         private Monster _currentMonster;
+        private const String PLAYER_DATA_FILE_NAME = "PlayerData.xml";
 
         public SuperAdventure()
         {
             InitializeComponent();
 
-            _player = new Player(20, 0);
-            MoveTo(World.LocationByID(World.LOCATION_ID_HOME));
-            _player.Inventory.Add(new InventoryItem(World.ItemByID(World.ITEM_ID_RUSTY_SWORD), 1));
-
-            RefreshPlayerInfo();
+            if (File.Exists(PLAYER_DATA_FILE_NAME))
+            {
+                _player = Player.CreatePlayerFromXmlString(File.ReadAllText(PLAYER_DATA_FILE_NAME));
+            }
+            else
+            {
+                _player = Player.CreateDefaultPlayer();
+            }
+            
+            MoveTo(_player.CurrentLocation);
+            
+            UpdatePlayerStatsUI();
         }
 
         private void btnNorth_Click(object sender, EventArgs e)
@@ -74,7 +83,7 @@ namespace SuperAdventure
             _player.CurrentHitPoints = _player.MaximumHitPoints;
 
             // Update Hit Points in UI
-            RefreshPlayerInfo();
+            UpdatePlayerStatsUI();
 
             // Does the location have a quest?
             if (newLocation.QuestAvailableHere != null)
@@ -118,7 +127,7 @@ namespace SuperAdventure
                             // Mark the quest as completed
                             _player.MarkQuestCompleted(newLocation.QuestAvailableHere);
 
-                            RefreshPlayerInfo();
+                            UpdatePlayerStatsUI();
                             
                         }
                     }
@@ -129,7 +138,9 @@ namespace SuperAdventure
 
                     // Display the messages
                     WriteToRtb(rtbMessages, "You receive the " + newLocation.QuestAvailableHere.Name + " quest." + Environment.NewLine);
+                    WriteToRtb(rtbMessages, Environment.NewLine);
                     WriteToRtb(rtbMessages, newLocation.QuestAvailableHere.Description + Environment.NewLine);
+                    WriteToRtb(rtbMessages, Environment.NewLine);
                     WriteToRtb(rtbMessages, "To complete it, return with:" + Environment.NewLine);
                     foreach (QuestCompletionItem qci in newLocation.QuestAvailableHere.QuestCompletionItems)
                     {
@@ -181,7 +192,7 @@ namespace SuperAdventure
             UpdateQuestListInUI();
 
             // Refresh player's weapons combobox
-            UpdateItemOptionsInUI<Weapon>(cboWeapons, btnUseWeapon);
+            UpdateItemOptionsInUI<Weapon>(cboWeapons, btnUseWeapon, _player.CurrentWeapon);
 
             // Refresh player's potions combobox
             UpdateItemOptionsInUI<HealingPotion>(cboPotions, btnUsePotion);
@@ -222,7 +233,7 @@ namespace SuperAdventure
             grid.Rows.Clear();
         }
 
-        private void UpdateItemOptionsInUI<T>(ComboBox cb, Button b) where T: Item
+        private void UpdateItemOptionsInUI<T>(ComboBox cb, Button b, T selected = null) where T: Item
         {
             List<T> item = new List<T>();
 
@@ -247,6 +258,10 @@ namespace SuperAdventure
                 cb.DataSource = item;
                 cb.DisplayMember = "Name";
                 cb.ValueMember = "ID";
+                if (selected != null)
+                {
+                    cb.SelectedItem = selected;
+                }
 
                 cb.SelectedIndex = 0;
             }
@@ -267,7 +282,7 @@ namespace SuperAdventure
             rtb.ScrollToCaret();
         }
 
-        public void RefreshPlayerInfo()
+        public void UpdatePlayerStatsUI()
         {
             lblHitPoints.Text = _player.CurrentHitPoints.ToString();
             lblGold.Text = _player.Gold.ToString();
@@ -345,10 +360,10 @@ namespace SuperAdventure
                 }
 
                 //Refresh player information
-                RefreshPlayerInfo();
+                UpdatePlayerStatsUI();
 
                 UpdateInventoryListInUI();
-                UpdateItemOptionsInUI<Weapon>(cboWeapons, btnUseWeapon);
+                UpdateItemOptionsInUI<Weapon>(cboWeapons, btnUseWeapon, _player.CurrentWeapon);
                 UpdateItemOptionsInUI<HealingPotion>(cboPotions, btnUsePotion);
 
                 // Add a blank line to the messages box, just for appearance.
@@ -371,7 +386,7 @@ namespace SuperAdventure
                 _player.CurrentHitPoints -= damageToPlayer;
 
                 //Refresh player data in UI
-                RefreshPlayerInfo();
+                UpdatePlayerStatsUI();
 
                 if (_player.CurrentHitPoints <= 0)
                 {
@@ -433,10 +448,20 @@ namespace SuperAdventure
             }
 
             // Refresh player data in UI
-            RefreshPlayerInfo();
+            UpdatePlayerStatsUI();
             UpdateInventoryListInUI();
             UpdateItemOptionsInUI<HealingPotion>(cboPotions, btnUsePotion);
             Console.WriteLine();
+        }
+
+        private void SuperAdventure_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            File.WriteAllText(PLAYER_DATA_FILE_NAME, _player.ToXmlString());
+        }
+
+        private void cboWeapons_SelectedIndexChanges(object sender, EventArgs e)
+        {
+            _player.CurrentWeapon = (Weapon)cboWeapons.SelectedItem;
         }
     }
 }

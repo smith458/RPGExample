@@ -47,6 +47,7 @@
     <Compile Include="LootItem.cs" />
     <Compile Include="Monster.cs" />
     <Compile Include="MonsterMaker.cs" />
+    <Compile Include="MonsterTypes.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="PlayerQuest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

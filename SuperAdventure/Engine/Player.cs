@@ -27,7 +27,7 @@ namespace Engine
         {
             get
             {
-                return (Level + 1) * 5;
+                return Level * 10;
             }
         }
         

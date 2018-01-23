@@ -161,20 +161,11 @@ namespace SuperAdventure
             }
 
             // Does the location have a monster?
-            if (newLocation.MonsterLivingHere != null)
+            if (newLocation.MonsterLivingHere != MonsterType.None)
             {
-                WriteToRtb(rtbMessages, "You see a " + newLocation.MonsterLivingHere.Name + Environment.NewLine);
+                _currentMonster = MonsterMaker.Create(newLocation.MonsterLivingHere);
 
-                // Make a new monster, using the values from the standard monster in the World.Monster list
-                Monster standardMonster = World.MonsterByID(newLocation.MonsterLivingHere.ID);
-
-                _currentMonster = new Monster(standardMonster.ID, standardMonster.Name, standardMonster.MaximumDamage,
-                    standardMonster.RewardExperiencePoints, standardMonster.RewardGold, standardMonster.CurrentHitPoints, standardMonster.MaximumHitPoints);
-
-                foreach (LootItem lootItem in standardMonster.LootTable)
-                {
-                    _currentMonster.LootTable.Add(lootItem);
-                }
+                WriteToRtb(rtbMessages, "You see a " + _currentMonster.Name + Environment.NewLine);
 
                 SetItemControlsVisibility(true);
             }

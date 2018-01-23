@@ -17,12 +17,21 @@ namespace Engine
         public int RewardGold { get; set; }
         public List<LootItem> LootTable { get; set; }
 
-        public Monster(int id, string name, int maximumDamage, int rewardExperiencePoints, int rewardGold, int currentHitPoints, int maximumHitPoints)
+        public Monster(int id, string name, int maximumDamage, int rewardExperiencePoints, int rewardGold, int maximumHitPoints, int currentHitPoints = 0)
         {
             ID = id;
             Name = name;
-            CurrentHitPoints = currentHitPoints;
             MaximumHitPoints = maximumHitPoints;
+
+            if (currentHitPoints == 0)
+            {
+                CurrentHitPoints = MaximumHitPoints;
+            }
+            else
+            {
+                CurrentHitPoints = currentHitPoints;
+            }
+
             MaximumDamage = maximumDamage;
             RewardExperiencePoints = rewardExperiencePoints;
             RewardGold = rewardGold;
